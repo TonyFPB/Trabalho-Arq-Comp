@@ -1,11 +1,37 @@
 #include "escalonamento.h"
 
-// FunÁ„o para simular criaÁ„o aleatÛria de I/O
+// Fun√ß√£o para simular cria√ß√£o aleat√≥ria de I/O
 int sorteiaIO() {
     return rand()%3; // 0 disco, 1 fita, 2 impressora
 }
 
-// SimulaÁ„o principal
+void processarIO(Fila *filaIO, Fila *filaDestino, int prioridadeDestino, int tempo, const char* nomeIO) {
+    int tamanho = 0;
+    Node *nodo = filaIO->inicio;
+
+    // Conta o tamanho da fila antes
+    while (nodo) {
+        tamanho++;
+        nodo = nodo->prox;
+    }
+
+    for (int i = 0; i < tamanho; i++) {
+        PCB *proc = desenfileirar(filaIO);
+        proc->io_tempo_restante--;
+
+        if (proc->io_tempo_restante == 0) {
+            proc->status = PRONTO;
+            proc->prioridade = prioridadeDestino;
+            enfileirar(filaDestino, proc);
+            printf("Tempo %d: PID %d retornou do %s.\n", tempo, proc->PID, nomeIO);
+        } else {
+            enfileirar(filaIO, proc);
+        }
+    }
+}
+
+
+// Simula√ß√£o principal
 void simularEscalonador(PCB processos[], int n, int delaySimulacao) {
     Fila alta, baixa, io_disco, io_fita, io_impressora;
     inicializarFila(&alta);
@@ -14,7 +40,7 @@ void simularEscalonador(PCB processos[], int n, int delaySimulacao) {
     inicializarFila(&io_fita);
     inicializarFila(&io_impressora);
 
-    // Todos comeÁam na fila de alta prioridade
+    // Todos come√ßam na fila de alta prioridade
     for (int i = 0; i < n; i++) {
         processos[i].status = PRONTO;
         processos[i].prioridade = 0;
@@ -24,7 +50,7 @@ void simularEscalonador(PCB processos[], int n, int delaySimulacao) {
     int tempo = 0;
 
     while (1) {
-        // Verifica se h· processos a executar
+        // Verifica se h√° processos a executar
         PCB *proc = NULL;
         if (!filaVazia(&alta)) {
             proc = desenfileirar(&alta);
@@ -40,13 +66,13 @@ void simularEscalonador(PCB processos[], int n, int delaySimulacao) {
             proc->tempo_restante -= tempo_exec;
             tempo += tempo_exec;
 
-            // ApÛs execuÁ„o
+            // Ap√≥s execu√ß√£o
             if (proc->tempo_restante == 0) {
                 proc->status = FINALIZADO;
                 printf("Tempo %d: PID %d finalizado.\n", tempo, proc->PID);
             } else {
                 // Simula chance de I/O
-                if (rand() % 2 == 0) {
+                if (rand() % 2 == 0) { // ~ 50%
                     proc->status = ESPERANDO_IO;
                     proc->io_tipo = sorteiaIO();
                     switch (proc->io_tipo) {
@@ -70,7 +96,7 @@ void simularEscalonador(PCB processos[], int n, int delaySimulacao) {
                     proc->status = PRONTO;
                     proc->prioridade = 1;
                     enfileirar(&baixa, proc);
-                    printf("Tempo %d: PID %d sofreu preempÁ„o.\n", tempo, proc->PID);
+                    printf("Tempo %d: PID %d sofreu preemp√ß√£o.\n", tempo, proc->PID);
                 }
             }
         } else {
@@ -78,50 +104,10 @@ void simularEscalonador(PCB processos[], int n, int delaySimulacao) {
         }
 
         // Processa I/O
-        Node *nodo;
-        // Disco
-        nodo = io_disco.inicio;
-        while (nodo) {
-            nodo->processo->io_tempo_restante--;
-            if (nodo->processo->io_tempo_restante == 0) {
-                PCB *retorno = desenfileirar(&io_disco);
-                retorno->status = PRONTO;
-                retorno->prioridade = 1;
-                enfileirar(&baixa, retorno);
-                printf("Tempo %d: PID %d retornou do DISCO.\n", tempo, retorno->PID);
-            } else {
-                nodo = nodo->prox;
-            }
-        }
-        // Fita
-        nodo = io_fita.inicio;
-        while (nodo) {
-            nodo->processo->io_tempo_restante--;
-            if (nodo->processo->io_tempo_restante == 0) {
-                PCB *retorno = desenfileirar(&io_fita);
-                retorno->status = PRONTO;
-                retorno->prioridade = 0;
-                enfileirar(&alta, retorno);
-                printf("Tempo %d: PID %d retornou da FITA.\n", tempo, retorno->PID);
-            } else {
-                nodo = nodo->prox;
-            }
-        }
-        // Impressora
-        nodo = io_impressora.inicio;
-        while (nodo) {
-            nodo->processo->io_tempo_restante--;
-            if (nodo->processo->io_tempo_restante == 0) {
-                PCB *retorno = desenfileirar(&io_impressora);
-                retorno->status = PRONTO;
-                retorno->prioridade = 0;
-                enfileirar(&alta, retorno);
-                printf("Tempo %d: PID %d retornou da IMPRESSORA.\n", tempo, retorno->PID);
-            } else {
-                nodo = nodo->prox;
-            }
-        }
-
+        processarIO(&io_disco, &baixa, 1, tempo, "DISCO");
+        processarIO(&io_fita, &alta, 0, tempo, "FITA");
+        processarIO(&io_impressora, &alta, 0, tempo, "IMPRESSORA");
+        
         // Verifica se todos finalizaram
         int finalizados = 1;
         for (int i = 0; i < n; i++) {
@@ -135,5 +121,5 @@ void simularEscalonador(PCB processos[], int n, int delaySimulacao) {
         if (finalizados) break;
     }
 
-    printf("SimulaÁ„o concluÌda em tempo %d.\n", tempo);
+    printf("Simula√ß√£o conclu√≠da em tempo %d.\n", tempo);
 }

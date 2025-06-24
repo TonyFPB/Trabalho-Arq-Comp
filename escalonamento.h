@@ -13,4 +13,5 @@
 #define IO_PRINTER 10
 
 void simularEscalonador(PCB processos[], int n, int delaySimulacao);
+void processarIO(Fila *filaIO, Fila *filaDestino, int prioridadeDestino, int tempo, const char* nomeIO);
 int sorteiaIO();

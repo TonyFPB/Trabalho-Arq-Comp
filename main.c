@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <unistd.h> // usleep() -> uso de delay
-#include <locale.h> // permitir acentuação
+#include <locale.h> 
 #include <time.h>   
 
 #include "escalonamento.h"
 
-#define DELAY 80000 // Delay padrão -> 0.08s
+#define DELAY 80000 // Delay padrÃ£o -> 0.08s
 
 int defineDelay(int opcao){
 	switch(opcao){
@@ -24,10 +24,10 @@ int main() {
 	setlocale(LC_ALL, "Portuguese");
     int n, delaySimulacao;
     
-	printf("Informe o número de processos (máx %d): ", MAX_PROCESSES);
+	printf("Informe o nÃºmero de processos (mÃ¡x %d): ", MAX_PROCESSES);
     scanf("%d", &n);
     
-	printf("Velocidade da simulação, digite:\n1 para lenta\n2 para média\n3 para rápida.\n", MAX_PROCESSES);
+	printf("Velocidade da simulaÃ§Ã£o, digite:\n- 1 para lenta\n- 2 para mÃ©dia\n- 3 para rÃ¡pida\n-> ");
     scanf("%d", &delaySimulacao);
     delaySimulacao = defineDelay(delaySimulacao);
     
@@ -35,8 +35,8 @@ int main() {
 
     for (int i = 0; i < n; i++) {
         processos[i].PID = i + 1;
-        processos[i].PPID = 0; // podemos assumir um único pai fictício
-        processos[i].tempo_restante = 20 + rand() % 21; // serviço entre 20 e 40
+        processos[i].PPID = 0; // podemos assumir um Ãºnico pai fictÃ­cio
+        processos[i].tempo_restante = 20 + rand() % 21; // serviÃ§o entre 20 e 40
         processos[i].status = NOVO;
     }
 

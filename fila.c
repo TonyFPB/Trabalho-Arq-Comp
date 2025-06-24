@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "fila.h"
 
-// Funções de fila
+// FunÃ§Ãµes de fila
 void inicializarFila(Fila *fila) {
     fila->inicio = fila->fim = NULL;
 }
